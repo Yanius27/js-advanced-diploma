@@ -1,3 +1,4 @@
+/* eslint-disable spaced-comment */
 /**
  * Класс, представляющий персонажей команды
  *
@@ -12,5 +13,21 @@
  * ```
  * */
 export default class Team {
-  // TODO: write your logic here
+  constructor(charList) {
+    this.characters = [];
+    for (let i = 0; i < charList.length; i += 1) {
+      this.characters.push(charList[i]);
+    }
+  }
+
+  //Метод для добавления персонажей в команду уже после создания экземпляра
+
+  // addCharcter(newCharacter) {
+  //   this.characters.forEach((item) => {
+  //     if (item.level === newCharacter.level && item.type === newCharacter.type) {
+  //       throw new Error('Данный персонаж уже есть в команде');
+  //     }
+  //   });
+  //   this.characters.push(newCharacter);
+  // }
 }

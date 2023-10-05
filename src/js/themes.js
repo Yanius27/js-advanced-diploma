@@ -1,8 +1,8 @@
-const themes = {
-  prairie: 'prairie',
-  desert: 'desert',
-  arctic: 'arctic',
-  mountain: 'mountain',
-};
-
-export default themes;
+export default class Themes {
+  constructor() {
+    this.prairie = 'prairie';
+    this.desert = 'desert';
+    this.arctic = 'arctic';
+    this.mountain = 'mountain';
+  }
+}

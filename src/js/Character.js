@@ -14,7 +14,16 @@
  */
 export default class Character {
   constructor(level, type = 'generic') {
-    this.level = level;
+    if (new.target.name === 'Character') {
+      throw new Error();
+    }
+    if (level > 4) {
+      this.level = 4;
+    } else if (level < 1) {
+      this.level = 1;
+    } else {
+      this.level = level;
+    }
     this.attack = 0;
     this.defence = 0;
     this.health = 50;
