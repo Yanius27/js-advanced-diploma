@@ -13,7 +13,7 @@
  * vampire
  */
 export default class Character {
-  constructor(level, type = 'generic') {
+  constructor(level, side, type = 'generic') {
     if (new.target.name === 'Character') {
       throw new Error();
     }
@@ -24,9 +24,10 @@ export default class Character {
     } else {
       this.level = level;
     }
+    this.side = side;
     this.attack = 0;
     this.defence = 0;
-    this.health = 50;
+    this.health = 100;
     this.type = type;
     // TODO: выбросите исключение, если кто-то использует "new Character()"
   }

@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable spaced-comment */
 /**
  * Класс, представляющий персонажей команды
