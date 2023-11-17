@@ -1,3 +1,6 @@
+/* eslint-disable prefer-destructuring */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-mixed-operators */
 /* eslint-disable no-param-reassign */
 /* eslint-disable consistent-return */
 /* eslint-disable max-len */
@@ -15,7 +18,7 @@ import Vampire from './characters/Vampire';
 import GamePlay from './GamePlay';
 import GameState from './GameState';
 
-const themes = new Themes();
+let themes = new Themes();
 const gameState = new GameState();
 
 export default class GameController {
@@ -35,7 +38,8 @@ export default class GameController {
   init() {
     // TODO: add event listeners to gamePlay events
     // TODO: load saved stated from stateService
-    this.gamePlay.drawUi(themes.prairie);
+    themes = this.changeTheme();
+    this.gamePlay.drawUi(themes.get(1));
     const numOfCharacters = Math.floor(Math.random() * (5 - 2) + 2);
     this.drowCharacters([Bowman, Magician, Swordsman], 1, numOfCharacters);
     this.drowCharacters([Daemon, Undead, Vampire], 1, numOfCharacters);
@@ -87,84 +91,36 @@ export default class GameController {
         radius.add(p + i);
         radius.add(p + i * bs + i);
         radius.add(p - i * bs + i);
-      }
-    } else if (p === closestRightBorder) {
-      for (let i = 1; i <= max; i++) {
-        radius.add(p - i);
-        radius.add(p - i * bs - i);
-        radius.add(p + i * bs - i);
+        if (p + i === closestRightBorder) {
+          break;
+        }
       }
     }
-    if (bs ** 2 - bs <= p) {
-      if (p - closestLeftBorder > (bs ** 2 - 1) - p) {
-        for (let i = 1; i <= max; i++) {
-          radius.add(p - i);
-          radius.add(p - i * bs - i);
-          radius.add(p + i * bs - i);
-        }
-        for (let i = 1; i <= (bs ** 2 - 1) - p; i++) {
-          radius.add(p + i);
-          radius.add(p + i * bs + i);
-          radius.add(p - i * bs + i);
-        }
-      } else {
-        for (let i = 1; i <= p - closestLeftBorder; i++) {
-          radius.add(p - i);
-          radius.add(p - i * bs - i);
-          radius.add(p + i * bs - i);
-        }
-        for (let i = 1; i <= max; i++) {
-          radius.add(p + i);
-          radius.add(p + i * bs + i);
-          radius.add(p - i * bs + i);
+    if (p === closestRightBorder) {
+      for (let i = 1; i <= max; i++) {
+        radius.add(p - i);
+        radius.add(p + i * bs - i);
+        radius.add(p - i * bs - i);
+        if (p - i === closestLeftBorder) {
+          break;
         }
       }
-    } else if (p < bs) {
-      if (p - 0 > closestRightBorder - p) {
-        for (let i = 1; i <= max; i++) {
-          radius.add(p - i);
-          radius.add(p - i * bs - i);
-          radius.add(p + i * bs - i);
-        }
-        for (let i = 1; i <= closestRightBorder - p; i++) {
-          radius.add(p + i);
-          radius.add(p + i * bs + i);
-          radius.add(p - i * bs + i);
-        }
-      } else {
-        for (let i = 1; i <= p - 0; i++) {
-          radius.add(p - i);
-          radius.add(p - i * bs - i);
-          radius.add(p + i * bs - i);
-        }
-        for (let i = 1; i <= max; i++) {
-          radius.add(p + i);
-          radius.add(p + i * bs + i);
-          radius.add(p - i * bs + i);
+    }
+    if (p !== closestLeftBorder && p !== closestRightBorder) {
+      for (let i = 1; i <= max; i++) {
+        radius.add(p + i);
+        radius.add(p + i * bs + i);
+        radius.add(p - i * bs + i);
+        if (p + i === closestRightBorder) {
+          break;
         }
       }
-    } else if (p !== closestLeftBorder && p !== closestRightBorder && p < bs ** 2 - bs && p > bs) {
-      if (p > closestLeftBorder) {
-        for (let i = 1; i <= p - closestLeftBorder; i++) {
-          radius.add(p - i);
-          radius.add(p - i * bs - i);
-          radius.add(p + i * bs - i);
-        }
-        for (let i = 1; i <= max; i++) {
-          radius.add(p + i);
-          radius.add(p + i * bs + i);
-          radius.add(p - i * bs + i);
-        }
-      } else if (p < closestLeftBorder) {
-        for (let i = 1; i <= max; i++) {
-          radius.add(p - i);
-          radius.add(p - i * bs - i);
-          radius.add(p + i * bs - i);
-        }
-        for (let i = 1; i <= closestRightBorder - p; i++) {
-          radius.add(p + i);
-          radius.add(p + i * bs + i);
-          radius.add(p - i * bs + i);
+      for (let i = 1; i <= max; i++) {
+        radius.add(p - i);
+        radius.add(p + i * bs - i);
+        radius.add(p - i * bs - i);
+        if (p - i === closestLeftBorder) {
+          break;
         }
       }
     }
@@ -178,12 +134,12 @@ export default class GameController {
   // Method for generate info message
   generateMessage(character) {
     const {
-      level,
+      _level,
       attack,
       defence,
       health,
     } = character;
-    return `\u{1F396}${level} \u2694${attack} \u{1F6E1}${defence} \u2764${health}`;
+    return `\u{1F396}${_level} \u2694${attack} \u{1F6E1}${defence} \u2764${health}`;
   }
 
   onCellClick(index) {
@@ -200,7 +156,6 @@ export default class GameController {
     }
     if (this.selectedChar) {
       if (clickedCell && ['daemon', 'undead', 'vampire'].includes(clickedCell.character.type)) {
-        console.log(clickedCell, this.selectedChar);
         this.positionedCharacters.forEach((el) => this.gamePlay.deselectCell(el.position));
         this.clickEffect(index, 'attack', clickedCell);
       } else if (clickedCell && ['bowman', 'swordsman', 'magician'].includes(clickedCell.character.type)) {
@@ -240,6 +195,29 @@ export default class GameController {
     this.gamePlay.hideCellTooltip(index);
   }
 
+  onNewGameClick() {
+    this.gamePlay.drawUi(themes.get(1));
+    this.positionedCharacters = [];
+    const numOfCharacters = Math.floor(Math.random() * (5 - 2) + 2);
+    this.drowCharacters([Bowman, Magician, Swordsman], 1, numOfCharacters);
+    this.drowCharacters([Daemon, Undead, Vampire], 1, numOfCharacters);
+    this.gamePlay.redrawPositions(this.positionedCharacters);
+  }
+
+  onSaveGameClick() {
+    gameState.state = this.positionedCharacters;
+    gameState.state = { gameScore: this.positionedCharacters[0].character._level - 1 };
+
+    gameState.save(gameState._state);
+  }
+
+  onLoadGameClick() {
+    const state = gameState.load();
+    this.positionedCharacters = state[0];
+    this.gamePlay.drawUi(themes.get(state[1].gameScore + 1));
+    this.gamePlay.redrawPositions(this.positionedCharacters);
+  }
+
   // Helper method for handling mouse hover over a empty cell or character
   hoverEffect(index, typeOfAction) {
     const availableCells = this.cellsRadius(this.selectedChar, typeOfAction);
@@ -269,7 +247,7 @@ export default class GameController {
           this.enemyTurn();
         }
       } else {
-        const damage = Math.max(this.selectedChar.character.attack - enemy.character.defence, this.selectedChar.character.attack * 0.1);
+        const damage = Math.round(Math.max(this.selectedChar.character.attack - enemy.character.defence, this.selectedChar.character.attack * 0.1));
         this.gamePlay.showDamage(index, damage).then(() => {
           enemy.character.health -= damage;
           if (enemy.character.health <= 0) {
@@ -277,10 +255,13 @@ export default class GameController {
           }
           this.gamePlay.redrawPositions(this.positionedCharacters);
           this.selectedChar = undefined;
-          if (!this.positionedCharacters.find((el) => el.character.side === 'enemy')) {
-            this.playersWin();
+          if (!this.positionedCharacters.find((el) => el.character.side === 'enemy') && this.positionedCharacters[0].character._level < 4) {
+            const { _level } = this.positionedCharacters[0].character;
+            this.playersWin(_level);
+          } else if (!this.positionedCharacters.find((el) => el.character.side === 'enemy') && this.positionedCharacters[0].character._level === 4) {
+            this.gameOver('Вы выиграли!');
           } else if (!this.positionedCharacters.find((el) => el.character.side === 'player')) {
-            this.gameOver();
+            this.gameOver('Вы проиграли');
           } else {
             GameState.from(gameState);
             if (gameState.turn === 'computer') {
@@ -292,25 +273,43 @@ export default class GameController {
     }
   }
 
-  playersWin() {
+  playersWin(level) {
+    level += 1;
+    if (this.positionedCharacters.length === 1) {
+      this.drowCharacters([Bowman, Magician, Swordsman], 1, 2);
+    } else if (this.positionedCharacters.length === 2) {
+      this.drowCharacters([Bowman, Magician, Swordsman], 1, 1);
+    }
+    this.drowCharacters([Daemon, Undead, Vampire], 1, this.positionedCharacters.length);
     this.positionedCharacters.forEach((el) => {
-      el.character.attack = Math.max(el.character.attack, (el.character.attack * (80 + el.character.health)) / 100);
-      el.character.defence = Math.max(el.character.defence, (el.character.defence * (80 + el.character.health)) / 100);
-      el.character.level++;
-      if (el.character.level > 4) {
-        el.character.level = 4;
-      }
-      el.character.health += 80;
-      if (el.character.health > 100) {
-        el.character.health = 100;
+      if (el.character.health < 100) {
+        el.character._level = level;
+        el.character.attack = Math.round(Math.max(el.character.attack, (el.character.attack * (80 + el.character.health) / 100)));
+        el.character.defence = Math.round(Math.max(el.character.defence, (el.character.defence * (80 + el.character.health)) / 100));
+        el.character.health += 80;
+        if (el.character.health > 100) {
+          el.character.health = 100;
+        }
+      } else {
+        el.character.level = level;
       }
     });
-    const numOfCharacters = Math.floor(Math.random() * (5 - 2) + 2);
-    this.drowCharacters([Daemon, Undead, Vampire], this.positionedCharacters[0].character.level, numOfCharacters);
+    this.gamePlay.drawUi(themes.get(level));
+    this.gamePlay.redrawPositions(this.positionedCharacters);
   }
 
-  gameOver() {
-    console.log('Вы проиграли!');
+  changeTheme() {
+    const themesArr = Object.entries(themes);
+    let levelIndex = 1;
+    themesArr.forEach((el) => {
+      el[0] = levelIndex;
+      levelIndex++;
+    });
+    return new Map(themesArr);
+  }
+
+  gameOver(message) {
+    alert(message);
   }
 
   //  Method for random enemy character selection
@@ -333,27 +332,46 @@ export default class GameController {
         playersTeam.push(el);
       }
     });
-    const weakestTarget = playersTeam.find((el) => el.character.health < 30);
-    if (weakestTarget) {
-      return weakestTarget;
-    }
     return playersTeam.sort((a, b) => Math.abs(p - a.position) - Math.abs(p - b.position))[0];
   }
 
   enemyTurn() {
+    this.changeTheme();
     this.selectedChar = this.randomEnemyCharSelection();
-    const selectedTarget = this.enemyTargetSelection(this.selectedChar.position);
-    const p = selectedTarget.position;
     const attackRadius = this.cellsRadius(this.selectedChar, 'attack');
     const moveRadius = this.cellsRadius(this.selectedChar, 'move');
+    const playersTeam = [];
+    this.positionedCharacters.forEach((el) => {
+      if (['bowman', 'swordsman', 'magician'].includes(el.character.type)) {
+        playersTeam.push(el);
+      }
+    });
+    const accessibleTarget = playersTeam.find((el) => attackRadius.includes(el.position));
+    if (accessibleTarget) {
+      this.clickEffect(accessibleTarget.position, 'attack', accessibleTarget);
+      return 0;
+    }
+    const weakestTarget = playersTeam.find((el) => el.character.health < 30);
+    if (weakestTarget && attackRadius.includes(weakestTarget.position)) {
+      this.clickEffect(weakestTarget.position, 'attack', weakestTarget);
+      return 0;
+    }
+    if (weakestTarget && !attackRadius.includes(weakestTarget.position)) {
+      const closestCellForTarget = moveRadius.sort((a, b) => Math.abs(weakestTarget.position - a) - Math.abs(weakestTarget.position - b))[0];
+      this.clickEffect(closestCellForTarget, 'move', weakestTarget);
+      return 0;
+    }
+    const randomTarget = this.enemyTargetSelection(this.selectedChar.position);
+    const p = randomTarget.position;
     if (this.selectedChar.character.health > 30 && attackRadius.includes(p)) {
-      this.clickEffect(p, 'attack', selectedTarget);
+      this.clickEffect(p, 'attack', randomTarget);
     } else if (this.selectedChar.character.health < 15 && !attackRadius.includes(p)) {
       const furthestCell = moveRadius.sort((a, b) => Math.abs(p - a) - Math.abs(p - b))[moveRadius.length - 1];
-      this.clickEffect(furthestCell, 'move', selectedTarget);
+      this.clickEffect(furthestCell, 'move', randomTarget);
     } else {
       const closestCellForTarget = moveRadius.sort((a, b) => Math.abs(p - a) - Math.abs(p - b))[0];
-      this.clickEffect(closestCellForTarget, 'move', selectedTarget);
+      this.clickEffect(closestCellForTarget, 'move', randomTarget);
+      return 0;
     }
   }
 
@@ -412,5 +430,8 @@ export default class GameController {
     this.gamePlay.addCellClickListener(this.onCellClick.bind(this));
     this.gamePlay.addCellEnterListener(this.onCellEnter.bind(this));
     this.gamePlay.addCellLeaveListener(this.onCellLeave.bind(this));
+    this.gamePlay.addNewGameListener(this.onNewGameClick.bind(this));
+    this.gamePlay.addSaveGameListener(this.onSaveGameClick.bind(this));
+    this.gamePlay.addLoadGameListener(this.onLoadGameClick.bind(this));
   }
 }
