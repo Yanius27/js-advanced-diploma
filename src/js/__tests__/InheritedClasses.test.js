@@ -4,10 +4,11 @@ import Bowman from '../characters/Bowman';
 test('Error should not thrown if created object of inherited class', () => {
   const received = new Bowman(1);
   expect(received).toEqual({
-    level: 1,
+    _level: 1,
     type: 'bowman',
-    health: 50,
+    health: 100,
     attack: 25,
     defence: 25,
+    side: 'player',
   });
 });

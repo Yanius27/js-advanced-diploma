@@ -18,13 +18,12 @@ import Vampire from './characters/Vampire';
 import GamePlay from './GamePlay';
 import GameState from './GameState';
 
-let themes = new Themes();
-const gameState = new GameState();
-
 export default class GameController {
   constructor(gamePlay, stateService) {
+    this.themes = new Themes();
     this.gamePlay = gamePlay;
     this.stateService = stateService;
+    this.gameState = new GameState();
     this.positionedCharacters = [];
     this.playerPositions = [];
     this.enemyPositions = [];
@@ -38,8 +37,15 @@ export default class GameController {
   init() {
     // TODO: add event listeners to gamePlay events
     // TODO: load saved stated from stateService
-    themes = this.changeTheme();
-    this.gamePlay.drawUi(themes.get(1));
+    console.log(this.stateService.load());
+    if (this.stateService.load().gameScore) {
+      this.score = this.stateService.load().gameScore;
+      this.gameState.state = ['gameScore', this.score];
+    } else {
+      this.score = 0;
+    }
+    this.themes = this.changeTheme();
+    this.gamePlay.drawUi(this.themes.get(1));
     const numOfCharacters = Math.floor(Math.random() * (5 - 2) + 2);
     this.drowCharacters([Bowman, Magician, Swordsman], 1, numOfCharacters);
     this.drowCharacters([Daemon, Undead, Vampire], 1, numOfCharacters);
@@ -143,7 +149,7 @@ export default class GameController {
   }
 
   onCellClick(index) {
-    if (gameState.turn === 'computer') {
+    if (this.gameState.turn === 'computer') {
       alert('Сейчас ход противника!');
       return null;
     }
@@ -196,8 +202,8 @@ export default class GameController {
   }
 
   onNewGameClick() {
-    this.gamePlay.drawUi(themes.get(1));
     this.positionedCharacters = [];
+    this.gamePlay.drawUi(this.themes.get(1));
     const numOfCharacters = Math.floor(Math.random() * (5 - 2) + 2);
     this.drowCharacters([Bowman, Magician, Swordsman], 1, numOfCharacters);
     this.drowCharacters([Daemon, Undead, Vampire], 1, numOfCharacters);
@@ -205,17 +211,20 @@ export default class GameController {
   }
 
   onSaveGameClick() {
-    gameState.state = this.positionedCharacters;
-    gameState.state = { gameScore: this.positionedCharacters[0].character._level - 1 };
+    this.gameState.state = ['charList', this.positionedCharacters];
+    this.gameState.state = ['level', this.positionedCharacters[0].character._level];
+    console.log(this.gameState.state);
 
-    gameState.save(gameState._state);
+    this.stateService.save(this.gameState.state);
   }
 
   onLoadGameClick() {
-    const state = gameState.load();
-    this.positionedCharacters = state[0];
-    this.gamePlay.drawUi(themes.get(state[1].gameScore + 1));
-    this.gamePlay.redrawPositions(this.positionedCharacters);
+    const state = this.stateService.load();
+    if (state.charList) {
+      this.positionedCharacters = state.charList;
+      this.gamePlay.drawUi(this.themes.get(state.level));
+      this.gamePlay.redrawPositions(this.positionedCharacters);
+    }
   }
 
   // Helper method for handling mouse hover over a empty cell or character
@@ -242,8 +251,8 @@ export default class GameController {
         this.selectedChar.position = index;
         this.gamePlay.redrawPositions(this.positionedCharacters);
         this.selectedChar = undefined;
-        GameState.from(gameState);
-        if (gameState.turn === 'computer') {
+        GameState.from(this.gameState);
+        if (this.gameState.turn === 'computer') {
           this.enemyTurn();
         }
       } else {
@@ -263,8 +272,8 @@ export default class GameController {
           } else if (!this.positionedCharacters.find((el) => el.character.side === 'player')) {
             this.gameOver('Вы проиграли');
           } else {
-            GameState.from(gameState);
-            if (gameState.turn === 'computer') {
+            GameState.from(this.gameState);
+            if (this.gameState.turn === 'computer') {
               this.enemyTurn();
             }
           }
@@ -274,6 +283,9 @@ export default class GameController {
   }
 
   playersWin(level) {
+    this.score += 1;
+    this.gameState.state = ['gameScore', this.score];
+    this.stateService.save(this.gameState.state);
     level += 1;
     if (this.positionedCharacters.length === 1) {
       this.drowCharacters([Bowman, Magician, Swordsman], 1, 2);
@@ -284,8 +296,8 @@ export default class GameController {
     this.positionedCharacters.forEach((el) => {
       if (el.character.health < 100) {
         el.character._level = level;
-        el.character.attack = Math.round(Math.max(el.character.attack, (el.character.attack * (80 + el.character.health) / 100)));
-        el.character.defence = Math.round(Math.max(el.character.defence, (el.character.defence * (80 + el.character.health)) / 100));
+        el.character.attack = Math.max(el.character.attack, Math.round((el.character.attack * (80 + el.character.health) / 100)));
+        el.character.defence = Math.max(el.character.defence, Math.round((el.character.defence * (80 + el.character.health)) / 100));
         el.character.health += 80;
         if (el.character.health > 100) {
           el.character.health = 100;
@@ -294,12 +306,12 @@ export default class GameController {
         el.character.level = level;
       }
     });
-    this.gamePlay.drawUi(themes.get(level));
+    this.gamePlay.drawUi(this.themes.get(level));
     this.gamePlay.redrawPositions(this.positionedCharacters);
   }
 
   changeTheme() {
-    const themesArr = Object.entries(themes);
+    const themesArr = Object.entries(this.themes);
     let levelIndex = 1;
     themesArr.forEach((el) => {
       el[0] = levelIndex;
@@ -309,6 +321,11 @@ export default class GameController {
   }
 
   gameOver(message) {
+    if (message === 'Вы выиграли!') {
+      this.score += 1;
+      this.gameState.state = ['gameScore', this.score];
+      this.stateService.save(this.gameState.state);
+    }
     alert(message);
   }
 

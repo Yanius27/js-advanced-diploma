@@ -1,14 +1,14 @@
+/* eslint-disable prefer-destructuring */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
-import GameStateService from './GameStateService';
 
-const gameStateService = new GameStateService(localStorage);
 export default class GameState {
-  constructor() {
+  constructor(gameStateService) {
     this.__turn = ['player', 'computer'];
     this.count = 0;
-    this._state = [];
+    this._state = {};
+    this.gameStateService = gameStateService;
   }
 
   static from(object) {
@@ -23,15 +23,11 @@ export default class GameState {
     return this.__turn[this.count];
   }
 
-  set state(value) {
-    this._state.push(value);
+  set state(arr) {
+    this._state[arr[0]] = arr[1];
   }
 
-  save(state) {
-    gameStateService.save(state);
-  }
-
-  load() {
-    return gameStateService.load();
+  get state() {
+    return this._state;
   }
 }

@@ -7,9 +7,9 @@ const gamePlay = new GamePlay();
 const stateService = new GameStateService([]);
 
 const gameCtrl = new GameController(gamePlay, stateService);
-const bowman = new Bowman(2);
+const bowman = new Bowman(1);
 
 test('method "generateMessage should return correct message"', () => {
   const received = gameCtrl.generateMessage(bowman);
-  expect(received).toBe(`\u{1F396}${2} \u2694${25} \u{1F6E1}${25} \u2764${50}`);
+  expect(received).toBe(`\u{1F396}${1} \u2694${25} \u{1F6E1}${25} \u2764${100}`);
 });
