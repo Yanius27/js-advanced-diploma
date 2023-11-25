@@ -37,7 +37,6 @@ export default class GameController {
   init() {
     // TODO: add event listeners to gamePlay events
     // TODO: load saved stated from stateService
-    console.log(this.stateService.load());
     if (this.stateService.load().gameScore) {
       this.score = this.stateService.load().gameScore;
       this.gameState.state = ['gameScore', this.score];
@@ -202,6 +201,9 @@ export default class GameController {
   }
 
   onNewGameClick() {
+    if (this.positionedCharacters.length === 0) {
+      this.listeners();
+    }
     this.positionedCharacters = [];
     this.gamePlay.drawUi(this.themes.get(1));
     const numOfCharacters = Math.floor(Math.random() * (5 - 2) + 2);
@@ -213,7 +215,6 @@ export default class GameController {
   onSaveGameClick() {
     this.gameState.state = ['charList', this.positionedCharacters];
     this.gameState.state = ['level', this.positionedCharacters[0].character._level];
-    console.log(this.gameState.state);
 
     this.stateService.save(this.gameState.state);
   }
@@ -260,6 +261,7 @@ export default class GameController {
         this.gamePlay.showDamage(index, damage).then(() => {
           enemy.character.health -= damage;
           if (enemy.character.health <= 0) {
+            this.gamePlay.deselectCell(enemy.position);
             this.positionedCharacters = this.positionedCharacters.filter((el) => el.position !== enemy.position);
           }
           this.gamePlay.redrawPositions(this.positionedCharacters);
@@ -270,7 +272,7 @@ export default class GameController {
           } else if (!this.positionedCharacters.find((el) => el.character.side === 'enemy') && this.positionedCharacters[0].character._level === 4) {
             this.gameOver('Вы выиграли!');
           } else if (!this.positionedCharacters.find((el) => el.character.side === 'player')) {
-            this.gameOver('Вы проиграли');
+            this.gameOver('Вы проиграли!');
           } else {
             GameState.from(this.gameState);
             if (this.gameState.turn === 'computer') {
@@ -285,7 +287,6 @@ export default class GameController {
   playersWin(level) {
     this.score += 1;
     this.gameState.state = ['gameScore', this.score];
-    this.stateService.save(this.gameState.state);
     level += 1;
     if (this.positionedCharacters.length === 1) {
       this.drowCharacters([Bowman, Magician, Swordsman], 1, 2);
@@ -321,12 +322,15 @@ export default class GameController {
   }
 
   gameOver(message) {
+    this.listeners(null);
+    alert(message);
+    this.positionedCharacters = [];
     if (message === 'Вы выиграли!') {
       this.score += 1;
       this.gameState.state = ['gameScore', this.score];
       this.stateService.save(this.gameState.state);
     }
-    alert(message);
+    this.gamePlay.setCursor('auto');
   }
 
   //  Method for random enemy character selection
@@ -443,7 +447,13 @@ export default class GameController {
     }
   }
 
-  listeners() {
+  listeners(value) {
+    if (value === null) {
+      this.gamePlay.addCellClickListener(null);
+      this.gamePlay.addCellEnterListener(null);
+      this.gamePlay.addCellLeaveListener(null);
+      return;
+    }
     this.gamePlay.addCellClickListener(this.onCellClick.bind(this));
     this.gamePlay.addCellEnterListener(this.onCellEnter.bind(this));
     this.gamePlay.addCellLeaveListener(this.onCellLeave.bind(this));

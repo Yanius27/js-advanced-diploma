@@ -97,6 +97,10 @@ export default class GamePlay {
    * @param callback
    */
   addCellEnterListener(callback) {
+    if (callback === null) {
+      this.cellEnterListeners = [];
+      return;
+    }
     this.cellEnterListeners.push(callback);
   }
 
@@ -106,6 +110,10 @@ export default class GamePlay {
    * @param callback
    */
   addCellLeaveListener(callback) {
+    if (callback === null) {
+      this.cellLeaveListeners = [];
+      return;
+    }
     this.cellLeaveListeners.push(callback);
   }
 
@@ -115,6 +123,10 @@ export default class GamePlay {
    * @param callback
    */
   addCellClickListener(callback) {
+    if (callback === null) {
+      this.cellClickListeners = [];
+      return;
+    }
     this.cellClickListeners.push(callback);
   }
 
