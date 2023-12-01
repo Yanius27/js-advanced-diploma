@@ -1,3 +1,4 @@
+/* eslint-disable no-extra-boolean-cast */
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-mixed-operators */
@@ -29,20 +30,16 @@ export default class GameController {
     this.enemyPositions = [];
     this.leftBorder = [];
     this.rightBorder = [];
+    this.score = 0;
     this.selectedChar = undefined;
     this.generatePositions(gamePlay.boardSize);
     this.borders(gamePlay.boardSize);
+    this.setScore();
   }
 
   init() {
     // TODO: add event listeners to gamePlay events
     // TODO: load saved stated from stateService
-    if (this.stateService.load().gameScore) {
-      this.score = this.stateService.load().gameScore;
-      this.gameState.state = ['gameScore', this.score];
-    } else {
-      this.score = 0;
-    }
     this.themes = this.changeTheme();
     this.gamePlay.drawUi(this.themes.get(1));
     const numOfCharacters = Math.floor(Math.random() * (5 - 2) + 2);
@@ -56,6 +53,14 @@ export default class GameController {
     for (let i = 0; i < boardSize ** 2; i += boardSize) {
       this.leftBorder.push(i);
       this.rightBorder.push(i + boardSize - 1);
+    }
+  }
+
+  // Method for check state
+  setScore() {
+    const state = this.stateService.load();
+    if (Object.prototype.hasOwnProperty.call(state, 'gameScore')) {
+      this.score = state.gameScore;
     }
   }
 
@@ -222,7 +227,9 @@ export default class GameController {
   onLoadGameClick() {
     const state = this.stateService.load();
     if (state.charList) {
+      console.log(state);
       this.positionedCharacters = state.charList;
+      this.score = state.gameScore;
       this.gamePlay.drawUi(this.themes.get(state.level));
       this.gamePlay.redrawPositions(this.positionedCharacters);
     }
