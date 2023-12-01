@@ -59,7 +59,8 @@ export default class GameController {
   // Method for check state
   setScore() {
     const state = this.stateService.load();
-    if (Object.prototype.hasOwnProperty.call(state, 'gameScore')) {
+    console.log(state);
+    if (state && Object.prototype.hasOwnProperty.call(state, 'gameScore')) {
       this.score = state.gameScore;
     }
   }
